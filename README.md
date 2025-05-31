@@ -187,3 +187,10 @@ python -m openrlbenchmark.rlops_multi_metrics \
 # Acknowledgement
 
 This work is supported by 🤗 Hugging Face's Big Science A100 cluster.
+
+# Reward 模型训练的一些图
+![alt text](static/模型结构.png)
+![alt text](static/归一化流程.png)
+![alt text](static/数据流程.png)
+![alt text](static/训练流程.png)
+![alt text](static/加速流程.png)
