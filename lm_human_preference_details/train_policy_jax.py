@@ -1,34 +1,35 @@
-import copy
-import functools
-import os
-import time
-from dataclasses import asdict, dataclass, field
-from types import SimpleNamespace
-from typing import List, Optional
+# 下面为每一行添加详细的中文注释，涵盖理论基础和工程实现，适合初学者理解
+import copy  # 导入copy模块，用于对象的深拷贝，常用于模型参数的复制，避免引用同一内存
+import functools  # 导入functools模块，提供高阶函数工具，如partial用于函数柯里化
+import os  # 导入os模块，进行操作系统相关操作，如路径处理
+import time  # 导入time模块，用于计时和生成时间戳
+from dataclasses import asdict, dataclass, field  # 导入dataclasses相关工具，简化数据结构定义
+from types import SimpleNamespace  # 导入SimpleNamespace，快速创建可动态赋值的对象
+from typing import List, Optional  # 导入类型注解，提升代码可读性和类型检查
 
-import einops
-import flax
-import flax.linen as nn
-import jax
-import jax.numpy as jnp
-import numpy as np
-import optax
-import orbax
-import tyro
-from clu import metrics
-from flax import jax_utils
-from flax.training import common_utils, orbax_utils
-from flax.training.train_state import TrainState
-from optax import ScaleByAdamState, update_moment, update_moment_per_elem_norm
-from optax._src import base, combine, numerics, utils
-from optax._src.alias import _scale_by_learning_rate
-from rich.console import Console
-from rich.pretty import pprint
-from torch.utils.data import DataLoader, IterableDataset
-from torch.utils.tensorboard import SummaryWriter
-from transformers import AutoTokenizer, FlaxAutoModelForCausalLM, GenerationConfig
+import einops  # einops用于灵活的张量重排，常用于深度学习中的数据变换
+import flax  # flax是JAX生态下的神经网络库，类似于PyTorch的nn模块
+import flax.linen as nn  # linen是flax的高级API，定义神经网络结构
+import jax  # JAX是高性能数值计算库，支持自动微分和硬件加速
+import jax.numpy as jnp  # JAX的numpy实现，支持GPU/TPU加速
+import numpy as np  # numpy是常用的数值计算库，这里用于与JAX互操作
+import optax  # optax是JAX生态下的优化器库，类似于PyTorch的optim
+import orbax  # orbax用于JAX模型的高效保存和恢复
+import tyro  # tyro用于命令行参数解析，简化实验参数管理
+from clu import metrics  # clu.metrics用于训练过程中的指标统计
+from flax import jax_utils  # jax_utils提供多设备训练的辅助工具
+from flax.training import common_utils, orbax_utils  # common_utils和orbax_utils提供训练和模型保存的常用工具
+from flax.training.train_state import TrainState  # TrainState用于管理训练状态（参数、优化器等）
+from optax import ScaleByAdamState, update_moment, update_moment_per_elem_norm  # Adam优化器相关状态和更新函数
+from optax._src import base, combine, numerics, utils  # optax底层实现细节
+from optax._src.alias import _scale_by_learning_rate  # optax学习率缩放实现
+from rich.console import Console  # rich用于美观的终端输出
+from rich.pretty import pprint  # rich的pprint用于结构化美观打印
+from torch.utils.data import DataLoader, IterableDataset  # PyTorch的数据加载工具，兼容JAX数据流
+from torch.utils.tensorboard import SummaryWriter  # TensorBoard日志记录器，用于可视化训练过程
+from transformers import AutoTokenizer, FlaxAutoModelForCausalLM, GenerationConfig  # HuggingFace的Tokenizer和JAX版模型
 
-from lm_human_preference_details.data import DATASET
+from lm_human_preference_details.data import DATASET  # 导入自定义的数据集生成器
 
 
 @dataclass
